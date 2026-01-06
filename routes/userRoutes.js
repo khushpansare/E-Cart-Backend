@@ -45,24 +45,27 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  let userExist = await userSchema.findOne({ email: email });
-  if (!userExist)
-    return res
-      .status(401)
-      .send(`This ${email} user not registered, please register then login.`);
+    let userExist = await userSchema.findOne({ email: email });
+    if (!userExist)
+      return res
+        .status(401)
+        .send(`This ${email} user not registered, please register then login.`);
 
-  bcrypt.compare(password, userExist.password, (comperr, result) => {
-    if (result) {
-      let token = jwt.sign({ email, id: userExist._id }, JWT_KEY);
-
-      res.cookie("token", token);
-      res.send("You can loggedin");
-    } else {
-      return res.send("Email or Password incoorect.");
-    }
-  });
+    bcrypt.compare(password, userExist.password, (comperr, result) => {
+      if (result) {
+        let token = jwt.sign({ email, id: userExist._id }, JWT_KEY);
+        res.cookie("token", token);
+        res.send("You can loggedin");
+      } else {
+        return res.send("Email or Password incoorect.");
+      }
+    });
+  } catch (err) {
+    res.send(err.message);
+  }
 });
 
 module.exports = router;
